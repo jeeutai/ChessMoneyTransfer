@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}체스제국 - 홈{% endblock %}
+
+{% block content %}
+    <h1>체스머니 송금 시스템</h1>
+    <p>체스제국의 디지털 화폐, 체스머니를 사용하세요!</p>
+    {% if current_user.is_authenticated %}
+        <p>안녕하세요, {{ current_user.username }}님!</p>
+    {% else %}
+        <p><a href="{{ url_for('login') }}">로그인</a> 후 서비스를 이용하세요.</p>
+    {% endif %}
+{% endblock %}

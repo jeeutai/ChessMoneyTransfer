@@ -35,6 +35,7 @@
 <body>
 	{% include 'navbar.html' %}
 	<h1> </h1>
+<div class="title-box">
     <div class="container">
         <h1>관리자 대시보드</h1>
         
@@ -86,7 +87,8 @@
             <button type="submit">급여 지급</button>
         </form>
     </div>
-
+  </div>
+  
     <script>
         function editUser(id, username, balance) {
             const newBalance = prompt(`"${username}"님의 새 잔액을 입력하세요:`, balance);

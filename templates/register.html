@@ -29,14 +29,14 @@
             width: 100%;
             padding: 10px;
             margin-top: 10px;
-            background-color: #008CBA;
+            background-color: #90EE90;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
         button:hover {
-            background-color: #007bb5;
+            background-color: #81c147;
         }
         .error-message {
             color: red;
@@ -51,7 +51,8 @@
 </head>
 <body>
     <div class="container">
-        <h2>회원가입</h2>
+        <h2>체스제국 송금 서비스</h2>
+		<h3>회원가입</h3>
         <form action="{{ url_for('register') }}" method="POST">
             <input type="text" name="username" placeholder="사용자명" required><br>
             <input type="password" name="password" placeholder="비밀번호" required><br>

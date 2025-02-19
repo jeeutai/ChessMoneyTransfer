@@ -36,7 +36,7 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #81c147;
         }
         .error-message {
             color: red;
@@ -51,7 +51,8 @@
 </head>
 <body>
     <div class="container">
-        <h2>로그인</h2>
+        <h2>체스제국 송금 서비스</h2>
+		<h3>로그인</h3>
         <form action="{{ url_for('login') }}" method="POST">
             <input type="text" name="username" placeholder="사용자명" required><br>
             <input type="password" name="password" placeholder="비밀번호" required><br>

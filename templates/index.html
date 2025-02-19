@@ -2,16 +2,21 @@
 <html>
 <head>
     <title>Welcome to ChessMoney</title>
+	 <link rel="stylesheet" href="/static/style.css">
     <style>
-        body { background-color: #90EE90; color: white; text-align: center; font-family: Arial, sans-serif; }
+   body { background-color: #A0D468; color: white; text-align: center; font-family: Lora, Merriweather; }
     </style>
 </head>
 <body>
-    <h1>Welcome to ChessMoney Tranfer Service</h1>
-	<h2>체스머니 송금 서비스에 오신 것을 환영합니다.</h2>
-    <a href="/login">로그인</a> | <a href="/register">회원가입</a>
-	<h3>공유 링크 : https://chessmoneytransfer.onrender.com</h3>
-	<h3>회원가입 해서 사용하시고, 궁금한 점 있으면 질문하세요.^^</h3>
-	<p>체스제국 질서유지부</p>
+    {% include 'navbar.html' %}
+	<div class="title-box">
+	    <h1>체스머니 송금 서비스에</h1>
+		<h1>오신 것을 환영합니다.</h1>
+	    <h1>·</h1>
+	    <h3>회원가입 해서 사용하시고, 궁금한 점 있으면 질문하세요.^^</h3>
+	    <h3>-체스제국 질서유지부-</h3>
+        <h1>·</h1>
+	    <h3>공유 링크 : <a href=https://chessmoneytransfer.onrender.com>https://chessmoneytransfer.onrender.com</a></h3>
+	</div>
 </body>
 </html>

@@ -1,0 +1,28 @@
+<link rel="stylesheet" href="/static/style.css">
+
+<nav>
+    <a href="/" class="navbar-logo">체스제국 송금 시스템</a>
+    
+    <!-- 햄버거 메뉴 아이콘 -->
+    <div id="menu-icon" class="menu-icon">☰</div>
+
+    <!-- 메뉴 -->
+    <div id="menu" class="menu" style="display: none;">
+        <a href="/login">로그인</a>
+        <a href="/register">회원가입</a>
+        <a href="/dashboard">대시보드</a>
+        <a href="/logout">로그아웃</a>
+    </div>
+</nav>
+
+<script>
+    // 햄버거 메뉴 클릭 시, 메뉴 표시/숨기기
+    document.getElementById('menu-icon').addEventListener('click', function() {
+        var menu = document.getElementById('menu');
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    });
+</script>

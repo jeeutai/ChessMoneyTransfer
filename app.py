@@ -1,142 +1,214 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-import csv
 import os
+import csv
+from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chessmoney.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'supersecretkey'
+USERS_CSV = 'users.csv'
 
-db = SQLAlchemy(app)
+class User:
+    def __init__(self, id, username, password, balance, is_admin):
+        self.id = id
+        self.username = username
+        self.password = password
+        self.balance = balance
+        self.is_admin = is_admin
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    balance = db.Column(db.Float, default=0.0)
-    is_admin = db.Column(db.Boolean, default=False)
+def get_current_user():
+    username = session.get('username')
+    if not username:
+        return None
+    
+    users = get_users()
+    for user in users:
+        if user.username == username:
+            return user
+    return None
 
-def save_users_to_csv():
-    with open('users.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['id', 'username', 'password', 'balance', 'is_admin'])
-        users = User.query.all()
+def get_users():
+    users = []
+    if os.path.exists(USERS_CSV):
+        with open(USERS_CSV, 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                users.append(User(
+                    id=int(row['id']),
+                    username=row['username'],
+                    password=row['password'],
+                    balance=float(row['balance']),
+                    is_admin=row['is_admin'].strip().lower() == 'true'
+                ))
+    return users
+
+def save_users(users):
+    with open(USERS_CSV, 'w', encoding='utf-8', newline='') as file:
+        fieldnames = ['id', 'username', 'password', 'balance', 'is_admin']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
         for user in users:
-            writer.writerow([user.id, user.username, user.password, user.balance, user.is_admin])
-
-def load_users_from_csv():
-    if not os.path.exists('users.csv'):
-        return
-    with open('users.csv', 'r') as file:
-        reader = csv.reader(file)
-        next(reader)  # 헤더 스킵
-        for row in reader:
-            if len(row) < 5:  # 데이터가 부족한 경우
-                continue  # 무시하고 다음 줄로 이동
-            user = User(
-                id=int(row[0]), 
-                username=row[1], 
-                password=row[2], 
-                balance=float(row[3]), 
-                is_admin=row[4].strip().lower() == 'true'  # 문자열 공백 제거 후 비교
-            )
-            db.session.merge(user)
-        db.session.commit()
+            writer.writerow({
+                'id': user.id,
+                'username': user.username,
+                'password': user.password,
+                'balance': user.balance,
+                'is_admin': 'true' if user.is_admin else 'false'
+            })
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    user = get_current_user()
+    return render_template('index.html', user=user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            session['is_admin'] = user.is_admin
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password', 'danger')
-    return render_template('login.html')
+        
+        users = get_users()
+        user = next((u for u in users if u.username == username), None)
+
+        if not user:
+            return render_template("login.html", message="존재하지 않는 사용자입니다.")
+
+        if password != user.password:
+            return render_template("login.html", message="비밀번호가 틀렸습니다.")
+
+        session['username'] = user.username
+        session['is_admin'] = user.is_admin
+        return redirect(url_for('dashboard'))
+
+    return render_template("login.html")
 
 @app.route('/logout')
 def logout():
-    session.clear()
+    session.pop('username', None)
+    session.pop('is_admin', None)
     return redirect(url_for('home'))
 
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
+
+    if user.is_admin:
+        users = get_users()
+        return render_template('admin_dashboard.html', user=user, users=users)
+    
     return render_template('dashboard.html', user=user)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        hashed_password = generate_password_hash(password)
+        username = request.form.get('username')
+        password = request.form.get('password')
 
-        # DB에서 첫 번째 사용자 체크
-        is_first_user = User.query.first() is None  # 첫 번째 사용자인지 확인
+        if not username or not password:
+            return render_template('register.html', message="⚠️ 사용자명과 비밀번호를 입력하세요.")
 
-        new_user = User(username=username, password=hashed_password, is_admin=is_first_user)
-        db.session.add(new_user)
-        db.session.commit()
-        save_users_to_csv()
+        users = get_users()
+
+        # 중복된 아이디 체크
+        if any(user.username == username for user in users):
+            return render_template('register.html', message="⚠️ 이미 존재하는 사용자명입니다.")
+
+        new_id = max([user.id for user in users], default=0) + 1
+        new_user = User(new_id, username, password, 0.0, False)  # 초기 잔액 0.0 설정
+        users.append(new_user)
+
+        save_users(users)
         return redirect(url_for('login'))
+
     return render_template('register.html')
-    
-@app.route('/admin')
-def admin_dashboard():
-    if 'user_id' not in session or not session.get('is_admin'):
-        flash("관리자만 접근 가능합니다!", "danger")
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    user_id = request.form.get('user_id')
+    if not user_id:
+        return "사용자 ID가 제공되지 않았습니다.", 400
+
+    users = get_users()
+    new_users = [user for user in users if str(user.id) != user_id]
+
+    save_users(new_users)
+    return redirect(url_for('dashboard'))
+
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
+
+    new_password = request.form['new_password']
+    users = get_users()
+    for u in users:
+        if u.id == user.id:
+            u.password = new_password
+
+    save_users(users)
+    return redirect(url_for('dashboard'))
+
+@app.route('/send_money', methods=['POST'])
+def send_money():
+    user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
+
+    recipient_username = request.form['recipient']
+    amount = float(request.form['amount'])
+
+    users = get_users()
+    sender = next((u for u in users if u.username == user.username), None)
+    recipient = next((u for u in users if u.username == recipient_username), None)
+
+    if sender and recipient and sender.balance >= amount:
+        sender.balance -= amount
+        recipient.balance += amount
+        save_users(users)
         return redirect(url_for('dashboard'))
+    else:
+        return render_template("dashboard.html", user=user, message="송금 실패! 잔액 부족 또는 사용자 없음.")
 
-    users = User.query.all()
-    return render_template('admin.html', users=users)
+@app.route('/give_salary', methods=['POST'])
+def give_salary():
+    user = get_current_user()
+    if not user or not user.is_admin:
+        return redirect(url_for('login'))
 
-@app.route('/update_balance/<int:user_id>', methods=['POST'])
-def update_balance(user_id):
-    if 'user_id' not in session or not session.get('is_admin'):
-        flash("관리자만 접근 가능합니다!", "danger")
-        return redirect(url_for('dashboard'))
+    salary_amount = float(request.form['salary_amount'])
+    users = get_users()
 
-    user = User.query.get(user_id)
-    if user:
-        new_balance = float(request.form['balance'])
-        user.balance = new_balance
-        db.session.commit()
-        save_users_to_csv()
-        flash(f"{user.username}의 잔액이 {new_balance}으로 변경되었습니다!", "success")
-    
-    return redirect(url_for('admin_dashboard'))
+    for u in users:
+        u.balance += salary_amount
 
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
-def delete_user(user_id):
-    if 'user_id' not in session or not session.get('is_admin'):
-        flash("관리자만 접근 가능합니다!", "danger")
-        return redirect(url_for('dashboard'))
+    save_users(users)
+    return redirect(url_for('dashboard'))
 
-    user = User.query.get(user_id)
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        save_users_to_csv()
-        flash(f"{user.username} 계정이 삭제되었습니다!", "success")
-    
-    return redirect(url_for('admin_dashboard'))
+@app.route('/add_user', methods=['POST'])
+def add_user():
+    user = get_current_user()
+    if not user or not user.is_admin:
+        return redirect(url_for('login'))
 
+    username = request.form.get('username')
+    password = request.form.get('password')
 
+    if not username or not password:
+        return "사용자명과 비밀번호를 입력하세요.", 400
+
+    users = get_users()
+
+    # 중복된 아이디 체크
+    if any(u.username == username for u in users):
+        return "이미 존재하는 사용자명입니다.", 400
+
+    new_id = max([u.id for u in users], default=0) + 1
+    new_user = User(new_id, username, password, 0.0, False)  # 초기 잔액 0.0
+    users.append(new_user)
+
+    save_users(users)
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        load_users_from_csv()
     app.run(debug=True)

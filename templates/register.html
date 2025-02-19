@@ -1,18 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>Register - ChessMoney</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
     <style>
-        body { background-color: #2e7d32; color: white; text-align: center; font-family: Arial, sans-serif; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            max-width: 300px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #007bb5;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        a {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <h2>Register</h2>
-    <form method="post">
-        <input type="text" name="username" placeholder="Username" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Register</button>
-    </form>
-    <a href="/login">Login</a>
+    <div class="container">
+        <h2>회원가입</h2>
+        <form action="{{ url_for('register') }}" method="POST">
+            <input type="text" name="username" placeholder="사용자명" required><br>
+            <input type="password" name="password" placeholder="비밀번호" required><br>
+            <button type="submit">가입하기</button>
+        </form>
+        {% if message %}
+            <p class="error-message">{{ message }}</p>
+        {% endif %}
+        <a href="{{ url_for('login') }}">로그인 페이지로 이동</a>
+    </div>
 </body>
 </html>

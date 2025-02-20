@@ -138,6 +138,22 @@ nav a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+input {
+    width: 100%;  /* 전체 너비 차지 */
+    padding: 12px;  /* 입력창 내부 여백 */
+    font-size: 1.2rem;  /* 글씨 크기 키우기 */
+    border: 2px solid #2E7D32;  /* 테두리 색상을 체스 테마 초록색으로 */
+    border-radius: 8px;  /* 둥근 모서리 */
+    outline: none;  /* 클릭했을 때 기본 테두리 제거 */
+    transition: 0.3s;
+}
+
+input:focus {
+    border-color: #FFD700;  /* 클릭했을 때 테두리 색 변경 */
+    box-shadow: 0px 0px 10px rgba(255, 215, 0, 0.5);
+}
+
+
 
 /* 푸터 스타일 */
 footer {

@@ -10,8 +10,8 @@
 	{% include 'navbar.html' %}
 	<h1> </h1>
 <div class="title-box">
-    <h2>Welcome, {{ user.username }}</h2>
-    <p>현재 잔액: {{ user.balance }} 체스머니</p>
+    <h2>환영합니다, {{ user.username }}님.</h2>
+    <p>현재 잔액은 {{ user.balance }} 체스머니 입니다.</p>
 	<h2>비밀번호 변경</h2>
 <form action="{{ url_for('change_password') }}" method="POST">
     <input type="password" name="new_password" placeholder="새 비밀번호" required>

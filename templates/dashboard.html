@@ -9,8 +9,9 @@
 <body>
 	{% include 'navbar.html' %}
 	<h1> </h1>
+<div class="title-box">
     <h2>Welcome, {{ user.username }}</h2>
-    <p>Your Balance: {{ user.balance }} ChessMoney</p>
+    <p>현재 잔액: {{ user.balance }} 체스머니</p>
 	<h2>비밀번호 변경</h2>
 <form action="{{ url_for('change_password') }}" method="POST">
     <input type="password" name="new_password" placeholder="새 비밀번호" required>
@@ -19,12 +20,12 @@
 
 <h2>송금</h2>
 <form action="{{ url_for('send_money') }}" method="POST">
-    <input type="text" name="recipient" placeholder="받는 사람 ID" required>
-    <input type="number" step="0.01" name="amount" placeholder="송금할 금액" required>
-    <input type="text" name="memo" placeholder="메모 (선택 사항)">
-    <button type="submit">송금</button>
+    <input type="text" name="recipient" placeholder="받는 사람 ID" required> <br>
+    <input type="number" step="0.01" name="amount" placeholder="송금할 금액" required><br>
+    <button type="submit">송금</button><br> <br>
 </form>
 
-    <a href="/logout">Logout</a>
+    <a href="/logout">로그아웃</a>
+</div>
 </body>
 </html>

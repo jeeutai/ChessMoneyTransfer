@@ -48,7 +48,7 @@ nav {
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 메뉴 그림자 */
     border-radius: 5px; /* 둥근 모서리 */
     overflow: hidden;
-    width: 200px; /* 메뉴 너비 */
+    width: 100%; /* 메뉴 너비 */
 }
 
 .menu a {
@@ -120,6 +120,24 @@ nav a {
 nav a:hover {
     color: #f1f1f1;
 }
+
+.dashboard-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
+}
+
+.dashboard-box {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 
 /* 푸터 스타일 */
 footer {

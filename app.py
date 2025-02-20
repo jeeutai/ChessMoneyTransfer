@@ -38,6 +38,12 @@ def get_users():
                     balance=float(row['balance']),
                     is_admin=row['is_admin'].strip().lower() == 'true'
                 ))
+        with open("users.csv", "w", newline="", encoding="utf-8") as file:
+             writer = csv.DictWriter(file, fieldnames=['id', 'username', 'password', 'balance', 'is_admin'])
+             writer.writeheader()
+             writer.writerows([user.__dict__ for user in users])  # 객체를 딕셔너리로 변환
+
+
     return users
 
 def save_users(users):
@@ -209,6 +215,29 @@ def add_user():
 
     save_users(users)
     return redirect(url_for('dashboard'))
+
+@app.route('/update_user', methods=['POST'])
+def update_user():
+    user_id = request.form['user_id']
+    new_balance = request.form['balance']
+    is_admin = 'is_admin' in request.form  # 체크박스 선택 여부 확인
+
+    # CSV 파일 업데이트
+    users = []
+    with open("users.csv", "r", newline="") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            if row['id'] == user_id:
+                row['balance'] = new_balance
+                row['is_admin'] = str(is_admin)  # Boolean 값을 문자열로 변환
+            users.append(row)
+
+    with open("users.csv", "w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=['id', 'username', 'password', 'balance', 'is_admin'])
+        writer.writeheader()
+        writer.writerows(users)
+
+    return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     app.run(debug=True)

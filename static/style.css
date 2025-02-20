@@ -18,7 +18,7 @@ nav {
     right: 0;
     background-color: rgba(0, 0, 0, 0.7); /* 네비게이션 바 배경색 반투명한 검정 */
     padding: 10px 20px; /* 상하 좌우 패딩 */
-    z-index: 100; /* 다른 요소보다 위에 배치 */
+    z-index: 170; /* 다른 요소보다 위에 배치 */
     display: flex;
     justify-content: space-between; /* 로고와 메뉴 아이콘 사이 간격 조정 */
     align-items: center; /* 중앙 정렬 */
@@ -48,7 +48,7 @@ nav {
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 메뉴 그림자 */
     border-radius: 5px; /* 둥근 모서리 */
     overflow: hidden;
-    width: 100%; /* 메뉴 너비 */
+    width: 30%; /* 메뉴 너비 */
 }
 
 .menu a {
@@ -73,6 +73,16 @@ nav {
         padding: 10px 0;
     }
 
+    th, td {
+        font-size: 0.9rem; /* 작은 화면에서는 글씨 크기 줄이기 */
+        padding: 6px;
+    }
+
+    button {
+        font-size: 0.8rem; /* 버튼 크기도 조정 */
+        padding: 6px 10px;
+    }
+
     .menu a {
         text-align: center;
         padding: 15px;
@@ -86,14 +96,14 @@ nav {
 
 /* 제목이 있는 박스 스타일 */
 .title-box {
-    background-color: #a8e6a1; /* 연두색 배경 */
-    color: #2c3e50; /* 제목 색상 */
+    background-color: #3db40f; /* 연두색 배경 */
+    color: white; /* 제목 색상 */
     padding: 15px 30px;
     border-radius: 15px; /* 둥근 모서리 */
     text-align: center;
     font-size: 2rem; /* 제목 크기 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
-    z-index: 5;
+    z-index: 150; /* 네비게이션 바보다 높게 설정 */
     position: relative;
     margin-top: 100px; /* 네비게이션 바와 겹치지 않게 여백 추가 */
 }
@@ -121,6 +131,7 @@ nav a:hover {
     color: #f1f1f1;
 }
 
+/* 대시보드 스타일 */
 .dashboard-container {
     display: flex;
     flex-wrap: wrap;
@@ -138,6 +149,7 @@ nav a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* 입력창 스타일 */
 input {
     width: 100%;  /* 전체 너비 차지 */
     padding: 12px;  /* 입력창 내부 여백 */
@@ -153,7 +165,11 @@ input:focus {
     box-shadow: 0px 0px 10px rgba(255, 215, 0, 0.5);
 }
 
-
+/* 테이블 스타일 */
+.table-container {
+    overflow-x: auto;  /* 가로 스크롤 추가 */
+    width: 100%;  /* 컨테이너가 화면 너비를 따라가도록 설정 */
+}
 
 /* 푸터 스타일 */
 footer {
@@ -166,4 +182,21 @@ footer {
     left: 0;
     right: 0;
     z-index: 20; /* 푸터가 다른 요소 위에 위치하도록 설정 */
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    z-index: 1000;
+}
+.close {
+    float: right;
+    cursor: pointer;
+    font-size: 20px;
 }

@@ -1,7 +1,7 @@
 /* 기본 스타일 */
 body {
     font-family: 'Lora', 'Merriweather', serif; /* 글씨체를 Lora와 Merriweather로 설정 */
-    background-image: url('/static/chessboard.jpg'); /* 배경 이미지 */
+    background-image: url('/static/chessboard.png'); /* 배경 이미지 */
     background-size: cover; /* 배경이 화면을 덮도록 설정 */
     background-position: center; /* 배경 위치 중앙 */
     color: black; /* 기본 글자 색상 */

@@ -5,23 +5,25 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 import sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from models import Transaction
+from models import Transaction, db
 from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI
-
-# Flask 앱 및 데이터베이스 설정
 
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 USERS_CSV = 'users.csv'
-
-db = SQLAlchemy(app)
+    
+db.init_app(app)
 
 
 # ✅ Flask 앱 컨텍스트 안에서 DB 테이블 생성
 with app.app_context():
     db.create_all()
+
+
+
 
 
 
@@ -44,6 +46,11 @@ def get_current_user():
         if user.username == username:
             return user
     return None
+
+def get_all_transactions():
+    with app.app_context():  # 컨텍스트를 추가해서 SQLAlchemy 오류 방지
+        return Transaction.query.all()
+
 
 def get_users():
     users = []
@@ -288,6 +295,9 @@ def update_user():
         writer = csv.DictWriter(file, fieldnames=['id', 'username', 'password', 'balance', 'is_admin'])
         writer.writeheader()
         writer.writerows(users)
+
+with app.app_context():
+    transactions = get_all_transactions()
 
 
 if __name__ == '__main__':

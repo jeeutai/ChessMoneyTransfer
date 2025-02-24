@@ -1,11 +1,31 @@
 import os
 import csv
 from flask import Flask, render_template, request, redirect, url_for, session
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+import sys
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from models import Transaction
+from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI
+
+# Flask 앱 및 데이터베이스 설정
+
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 USERS_CSV = 'users.csv'
 
+db = SQLAlchemy(app)
+
+
+# ✅ Flask 앱 컨텍스트 안에서 DB 테이블 생성
+with app.app_context():
+    db.create_all()
+
+
+
+# 사용자 클래스
 class User:
     def __init__(self, id, username, password, balance, is_admin):
         self.id = id
@@ -46,6 +66,8 @@ def get_users():
 
     return users
 
+
+# 사용자 정보 CSV 저장
 def save_users(users):
     with open(USERS_CSV, 'w', encoding='utf-8', newline='') as file:
         fieldnames = ['id', 'username', 'password', 'balance', 'is_admin']
@@ -59,6 +81,16 @@ def save_users(users):
                 'balance': user.balance,
                 'is_admin': 'true' if user.is_admin else 'false'
             })
+
+
+# 현재 로그인한 사용자 가져오기
+def get_current_user():
+    username = session.get('username')
+    if not username:
+        return None
+    users = get_users()
+    return next((user for user in users if user.username == username), None)
+
 
 @app.route('/')
 def home():
@@ -86,11 +118,13 @@ def login():
 
     return render_template("login.html")
 
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     session.pop('is_admin', None)
     return redirect(url_for('home'))
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -103,6 +137,7 @@ def dashboard():
         return render_template('admin_dashboard.html', user=user, users=users)
     
     return render_template('dashboard.html', user=user)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -124,6 +159,7 @@ def register():
         users.append(new_user)
 
         save_users(users)
+
         return redirect(url_for('login'))
 
     return render_template('register.html')
@@ -165,6 +201,7 @@ def send_money():
     amount = float(request.form['amount'])
 
     users = get_users()
+
     sender = next((u for u in users if u.username == user.username), None)
     recipient = next((u for u in users if u.username == recipient_username), None)
 
@@ -172,6 +209,21 @@ def send_money():
         sender.balance -= amount
         recipient.balance += amount
         save_users(users)
+
+        # 거래 내역 저장
+        transaction = Transaction(sender=user.username, recipient=recipient_username, amount=amount)
+        db.session.add(transaction)
+        db.session.commit()
+
+        return redirect(url_for('dashboard'))
+
+    return render_template("dashboard.html", user=user, message="⚠️ 송금 실패! 잔액 부족 또는 사용자 없음.")
+
+
+@app.route('/admin')
+def admin_dashboard():
+    user = get_current_user()
+    if not user or not session.get('is_admin'):
         return redirect(url_for('dashboard'))
     else:
         return render_template("dashboard.html", user=user, message="송금 실패! 잔액 부족 또는 사용자 없음.")
@@ -237,7 +289,6 @@ def update_user():
         writer.writeheader()
         writer.writerows(users)
 
-    return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     app.run(debug=True)

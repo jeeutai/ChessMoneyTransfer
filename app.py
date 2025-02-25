@@ -65,13 +65,8 @@ def get_users():
                     balance=float(row['balance']),
                     is_admin=row['is_admin'].strip().lower() == 'true'
                 ))
-        with open("users.csv", "w", newline="", encoding="utf-8") as file:
-             writer = csv.DictWriter(file, fieldnames=['id', 'username', 'password', 'balance', 'is_admin'])
-             writer.writeheader()
-             writer.writerows([user.__dict__ for user in users])  # 객체를 딕셔너리로 변환
+    return users  # ✅ 불필요한 덮어쓰기 제거
 
-
-    return users
 
 
 # 사용자 정보 CSV 저장
@@ -132,7 +127,6 @@ def logout():
     session.pop('is_admin', None)
     return redirect(url_for('home'))
 
-
 @app.route('/dashboard')
 def dashboard():
     user = get_current_user()
@@ -144,7 +138,6 @@ def dashboard():
         return render_template('admin_dashboard.html', user=user, users=users)
     
     return render_template('dashboard.html', user=user)
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -226,7 +219,6 @@ def send_money():
 
     return render_template("dashboard.html", user=user, message="⚠️ 송금 실패! 잔액 부족 또는 사용자 없음.")
 
-
 @app.route('/admin')
 def admin_dashboard():
     user = get_current_user()
@@ -285,17 +277,19 @@ def update_user():
     is_admin = 'is_admin' in request.form  # 체크박스 선택 여부 확인
 
     users = get_users()
+    updated = False  # 업데이트 여부 확인
+
     for user in users:
         if user.id == user_id:
-            user.balance = new_balance
-            user.is_admin = is_admin  # Boolean 값 직접 할당
+            user.balance = new_balance  # ✅ 잔액 업데이트
+            user.is_admin = is_admin  # ✅ 관리자 여부 업데이트
+            updated = True
 
-    save_users(users)
+    if updated:
+        save_users(users)  # ✅ 변경 사항 저장
+
     return redirect(url_for('dashboard'))
 
-
-with app.app_context():
-    transactions = get_all_transactions()
 
 
 if __name__ == '__main__':

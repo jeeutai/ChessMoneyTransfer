@@ -10,8 +10,8 @@ from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI
 
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.secret_key = SECRET_KEY  # config.py에서 가져온 값 사용
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI  # 이미 설정된 값 사용
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 USERS_CSV = 'users.csv'
     
@@ -230,11 +230,14 @@ def send_money():
 @app.route('/admin')
 def admin_dashboard():
     user = get_current_user()
-    if not user or not session.get('is_admin'):
+    if not user or not user.is_admin:
         return redirect(url_for('dashboard'))
-    else:
-        return render_template("dashboard.html", user=user, message="송금 실패! 잔액 부족 또는 사용자 없음.")
-
+    
+    users = get_users()  # 관리자니까 모든 사용자 정보 가져옴
+    transactions = get_all_transactions()  # 전체 거래 내역 가져옴
+    
+    return render_template("admin_dashboard.html", user=user, users=users, transactions=transactions)
+    
 @app.route('/give_salary', methods=['POST'])
 def give_salary():
     user = get_current_user()
@@ -277,24 +280,19 @@ def add_user():
 
 @app.route('/update_user', methods=['POST'])
 def update_user():
-    user_id = request.form['user_id']
-    new_balance = request.form['balance']
+    user_id = int(request.form['user_id'])
+    new_balance = float(request.form['balance'])
     is_admin = 'is_admin' in request.form  # 체크박스 선택 여부 확인
 
-    # CSV 파일 업데이트
-    users = []
-    with open("users.csv", "r", newline="") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            if row['id'] == user_id:
-                row['balance'] = new_balance
-                row['is_admin'] = str(is_admin)  # Boolean 값을 문자열로 변환
-            users.append(row)
+    users = get_users()
+    for user in users:
+        if user.id == user_id:
+            user.balance = new_balance
+            user.is_admin = is_admin  # Boolean 값 직접 할당
 
-    with open("users.csv", "w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=['id', 'username', 'password', 'balance', 'is_admin'])
-        writer.writeheader()
-        writer.writerows(users)
+    save_users(users)
+    return redirect(url_for('dashboard'))
+
 
 with app.app_context():
     transactions = get_all_transactions()
